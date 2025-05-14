@@ -1,0 +1,80 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: event-reward-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - event-reward-network
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: event-reward-gateway
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - AUTH_SERVICE_URL=http://auth:3001
+      - EVENT_SERVICE_URL=http://event:3002
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - auth
+      - event
+    networks:
+      - event-reward-network
+
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: event-reward-auth
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MONGODB_URI=mongodb://root:${MONGO_PASSWORD}@mongodb:27017/auth?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=1h
+    depends_on:
+      - mongodb
+    networks:
+      - event-reward-network
+
+  event:
+    build:
+      context: ./event
+      dockerfile: Dockerfile
+    container_name: event-reward-event
+    restart: always
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - MONGODB_URI=mongodb://root:${MONGO_PASSWORD}@mongodb:27017/event?authSource=admin
+      - AUTH_SERVICE_URL=http://auth:3001
+    depends_on:
+      - mongodb
+    networks:
+      - event-reward-network
+
+networks:
+  event-reward-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
