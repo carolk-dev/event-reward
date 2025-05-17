@@ -7,10 +7,13 @@ import { AuthController } from "./auth.controller";
 import { UsersModule } from "../users/users.module";
 import { LocalStrategy } from "./strategies/local.strategy";
 import { JwtStrategy } from "./strategies/jwt.strategy";
+import { MongooseModule } from "@nestjs/mongoose";
+import { User, UserSchema } from "../users/schemas/user.schema";
 
 @Module({
   imports: [
     UsersModule,
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     PassportModule.register({ defaultStrategy: "jwt" }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -21,9 +24,6 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 
         return {
           secret: jwtSecret,
-          signOptions: {
-            expiresIn: configService.get<string>("JWT_EXPIRES_IN", "1h"),
-          },
         };
       },
     }),

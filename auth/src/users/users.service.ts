@@ -49,29 +49,12 @@ export class UsersService {
     return null;
   }
 
+  async setRole(userId: string, role: string): Promise<User> {
+    const user = await this.findOne(userId);
+    return this.userModel.findByIdAndUpdate(userId, { role }, { new: true }).exec();
+  }
+
   private async comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
-  }
-
-  async addRole(userId: string, role: string): Promise<User> {
-    const user = await this.findOne(userId);
-
-    if (!user.roles.includes(role)) {
-      user.roles.push(role);
-      return this.userModel.findByIdAndUpdate(userId, { roles: user.roles }, { new: true }).exec();
-    }
-
-    return user;
-  }
-
-  async removeRole(userId: string, role: string): Promise<User> {
-    const user = await this.findOne(userId);
-
-    if (user.roles.includes(role)) {
-      user.roles = user.roles.filter((r) => r !== role);
-      return this.userModel.findByIdAndUpdate(userId, { roles: user.roles }, { new: true }).exec();
-    }
-
-    return user;
   }
 }

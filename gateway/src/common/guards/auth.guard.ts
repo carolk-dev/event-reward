@@ -1,5 +1,5 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -11,9 +11,9 @@ export class AuthGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new UnauthorizedException('인증이 필요합니다.');
+      throw new UnauthorizedException("인증이 필요합니다.");
     }
 
     return true;
   }
-} 
+}
