@@ -3,7 +3,6 @@ import { JwtService } from "@nestjs/jwt";
 import { UsersService } from "../users/users.service";
 import { CreateUserDto } from "../users/dto/create-user.dto";
 import { LoginDto } from "./dto/login.dto";
-import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { UserDocument } from "../users/schemas/user.schema";
 import { ConfigService } from "@nestjs/config";
 import * as crypto from "crypto";
@@ -57,26 +56,26 @@ export class AuthService {
     return user;
   }
 
-  async refreshToken(refreshTokenDto: RefreshTokenDto) {
+  async refreshToken(refreshToken: string) {
     try {
-      console.log("리프레시 토큰 요청 받음:", refreshTokenDto);
+      console.log("리프레시 토큰 요청 받음:", refreshToken);
 
-      if (!refreshTokenDto || !refreshTokenDto.refreshToken) {
+      if (!refreshToken) {
         console.log("리프레시 토큰이 제공되지 않음");
         throw new UnauthorizedException("리프레시 토큰이 제공되지 않았습니다.");
       }
 
       // 리프레시 토큰으로 사용자 찾기
-      const user = await this.findByRefreshToken(refreshTokenDto.refreshToken);
+      const user = await this.findByRefreshToken(refreshToken);
 
       // 토큰 생성
-      const { accessToken, refreshToken } = await this.createTokens(user);
+      const { accessToken, refreshToken: newRefreshToken } = await this.createTokens(user);
 
       this.logger.log(`토큰 갱신 성공: ${user.email}`);
 
       return {
         access_token: accessToken,
-        refresh_token: refreshToken,
+        refresh_token: newRefreshToken,
       };
     } catch (error) {
       this.logger.error(`토큰 갱신 실패: ${error.message}`);

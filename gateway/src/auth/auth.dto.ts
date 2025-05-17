@@ -14,7 +14,7 @@ export class LoginDto {
   password: string;
 }
 
-export class RegisterDto {
+export class CreateUserDto {
   @ApiProperty({
     description: "사용자 이름",
     example: "new_user",
@@ -34,10 +34,25 @@ export class RegisterDto {
   password: string;
 }
 
-export class RefreshTokenDto {
+export class UpdateUserDto {
   @ApiProperty({
-    description: "리프레시 토큰",
-    example: "7f4e3d2c1b0a...",
+    description: "사용자 이름",
+    example: "updated_username",
+    required: false,
   })
-  refreshToken: string;
+  username?: string;
+
+  @ApiProperty({
+    description: "사용자 이메일",
+    example: "updated_email@example.com",
+    required: false,
+  })
+  email?: string;
+
+  @ApiProperty({
+    description: "사용자 비밀번호",
+    example: "newpassword123",
+    required: false,
+  })
+  password?: string;
 }

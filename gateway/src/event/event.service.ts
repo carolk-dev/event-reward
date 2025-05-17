@@ -243,4 +243,16 @@ export class EventService {
       this.handleError(error);
     }
   }
+
+  async getRewardRequestsByStatus(status?: string) {
+    try {
+      const url = status
+        ? `${this.eventServiceUrl}/rewards/requests?status=${status}`
+        : `${this.eventServiceUrl}/rewards/requests`;
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
 }

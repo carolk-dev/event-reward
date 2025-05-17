@@ -4,6 +4,7 @@ import { Model } from "mongoose";
 import * as bcrypt from "bcrypt";
 import { User, UserDocument } from "./schemas/user.schema";
 import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
 export class UsersService {
@@ -37,7 +38,11 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    return this.userModel.findOne({ email }).exec();
+    const user = await this.userModel.findOne({ email }).exec();
+    if (!user) {
+      throw new NotFoundException(`이메일이 ${email}인 사용자를 찾을 수 없습니다.`);
+    }
+    return user;
   }
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -52,6 +57,31 @@ export class UsersService {
   async setRole(userId: string, role: string): Promise<User> {
     const user = await this.findOne(userId);
     return this.userModel.findByIdAndUpdate(userId, { role }, { new: true }).exec();
+  }
+
+  async update(userId: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findOne(userId);
+
+    // 이메일이 변경되는 경우 중복 확인
+    if (updateUserDto.email && updateUserDto.email !== user.email) {
+      const existingUser = await this.userModel.findOne({ email: updateUserDto.email }).exec();
+      if (existingUser) {
+        throw new ConflictException("이미 사용 중인 이메일입니다.");
+      }
+    }
+
+    // 비밀번호가 포함된 경우 해싱 처리
+    if (updateUserDto.password) {
+      const salt = await bcrypt.genSalt();
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
+    }
+
+    return this.userModel.findByIdAndUpdate(userId, updateUserDto, { new: true }).exec();
+  }
+
+  async remove(userId: string): Promise<User> {
+    const user = await this.findOne(userId);
+    return this.userModel.findByIdAndDelete(userId).exec();
   }
 
   private async comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {

@@ -29,6 +29,14 @@ export class RewardsService {
     return this.rewardModel.find().populate("event").exec();
   }
 
+  async findByEventId(eventId: string): Promise<Reward[]> {
+    // 먼저 해당 이벤트가 존재하는지 확인
+    await this.eventsService.findOne(eventId);
+
+    // 해당 이벤트에 속한 모든 보상 조회
+    return this.rewardModel.find({ event: eventId }).populate("event").exec();
+  }
+
   async findOne(id: string): Promise<Reward> {
     const reward = await this.rewardModel.findById(id).populate("event").exec();
     if (!reward) {
@@ -73,6 +81,8 @@ export class RewardsService {
     if (!event.isActive || now < event.startDate || now > event.endDate) {
       throw new BadRequestException("진행 중인 이벤트가 아닙니다.");
     }
+
+    // TODO: 사용자가 이벤트 조건을 달성했는지 확인 to 3rd party api
 
     // 1. 동일한 사용자가 같은 보상에 대해 PENDING 상태의 요청이 있는지 확인
     const existingPendingRequest = await this.rewardRequestModel
@@ -198,11 +208,39 @@ export class RewardsService {
     return this.rewardRequestModel.find({ userId }).populate("reward").exec();
   }
 
+  async findRewardRequestsByEvent(eventId: string): Promise<RewardRequest[]> {
+    // 먼저 해당 이벤트가 존재하는지 확인
+    await this.eventsService.findOne(eventId);
+
+    // 해당 이벤트에 속한 모든 보상 ID 조회
+    const rewards = await this.rewardModel.find({ event: eventId }).exec();
+
+    if (rewards.length === 0) {
+      return [];
+    }
+
+    const rewardIds = rewards.map((reward) => reward._id);
+
+    // 해당 보상들에 대한 모든 요청 조회
+    return this.rewardRequestModel
+      .find({ reward: { $in: rewardIds } })
+      .populate("reward")
+      .exec();
+  }
+
   async findAllRewardRequests(): Promise<RewardRequest[]> {
     return this.rewardRequestModel.find().populate("reward").exec();
   }
 
   async findPendingRewardRequests(): Promise<RewardRequest[]> {
     return this.rewardRequestModel.find({ status: RewardRequestStatus.PENDING }).populate("reward").exec();
+  }
+
+  async findRewardRequestsByStatus(status?: RewardRequestStatus): Promise<RewardRequest[]> {
+    if (!status) {
+      return this.findAllRewardRequests();
+    }
+
+    return this.rewardRequestModel.find({ status }).populate("reward").exec();
   }
 }

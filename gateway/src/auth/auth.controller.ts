@@ -4,8 +4,8 @@ import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
 import { RolesGuard } from "../common/guards/roles.guard";
 import { Roles } from "../common/decorators/roles.decorator";
 import { UserRole } from "../common/constants/roles";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
-import { LoginDto, RegisterDto, RefreshTokenDto } from "./auth.dto";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from "@nestjs/swagger";
+import { LoginDto, CreateUserDto, UpdateUserDto } from "./auth.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -25,17 +25,29 @@ export class AuthController {
   @ApiResponse({ status: 400, description: "잘못된 요청" })
   @Post("register")
   @HttpCode(HttpStatus.CREATED)
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  async register(@Body() createUserDto: CreateUserDto) {
+    return this.authService.register(createUserDto);
   }
 
   @ApiOperation({ summary: "토큰 갱신", description: "리프레시 토큰을 사용하여 새 액세스 토큰을 발급합니다." })
   @ApiResponse({ status: 200, description: "토큰 갱신 성공" })
   @ApiResponse({ status: 401, description: "유효하지 않은 리프레시 토큰" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        refreshToken: {
+          type: "string",
+          example: "7f4e3d2c1b0a...",
+          description: "리프레시 토큰",
+        },
+      },
+    },
+  })
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
-  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(refreshTokenDto);
+  async refreshToken(@Body("refreshToken") refreshToken: string) {
+    return this.authService.refreshToken(refreshToken);
   }
 }
 
@@ -87,8 +99,8 @@ export class UsersController {
   @Put(":id")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
-  async updateUser(@Param("id") id: string, @Body() userData: any) {
-    return this.authService.updateUser(id, userData);
+  async updateUser(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.authService.updateUser(id, updateUserDto);
   }
 
   @ApiOperation({ summary: "사용자 삭제", description: "사용자를 삭제합니다. (관리자 전용)" })

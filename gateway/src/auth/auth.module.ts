@@ -21,7 +21,7 @@ import { UsersController } from "./auth.controller";
       }),
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, UsersController],
   providers: [AuthService, JwtStrategy],
   exports: [JwtStrategy, PassportModule],
 })

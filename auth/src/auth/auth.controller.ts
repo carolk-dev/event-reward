@@ -3,10 +3,9 @@ import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
 import { CreateUserDto } from "../users/dto/create-user.dto";
 import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
-import { RefreshTokenDto } from "./dto/refresh-token.dto";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from "@nestjs/swagger";
 
-@ApiTags("인증")
+@ApiTags("Auth")
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -32,10 +31,22 @@ export class AuthController {
   @ApiOperation({ summary: "토큰 갱신" })
   @ApiResponse({ status: 200, description: "토큰 갱신 성공" })
   @ApiResponse({ status: 401, description: "유효하지 않은 리프레시 토큰" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        refreshToken: {
+          type: "string",
+          example: "7f4e3d2c1b0a...",
+          description: "리프레시 토큰",
+        },
+      },
+    },
+  })
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
-  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
-    return this.authService.refreshToken(refreshTokenDto);
+  async refreshToken(@Body("refreshToken") refreshToken: string) {
+    return this.authService.refreshToken(refreshToken);
   }
 
   @ApiOperation({ summary: "토큰 검증" })

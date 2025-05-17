@@ -58,9 +58,9 @@ export class AuthService {
     }
   }
 
-  async register(registerDto: any) {
+  async register(createUserDto: any) {
     try {
-      const response = await axios.post(`${this.authServiceUrl}/auth/register`, registerDto);
+      const response = await axios.post(`${this.authServiceUrl}/auth/register`, createUserDto);
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -68,9 +68,9 @@ export class AuthService {
   }
 
   // 토큰 갱신 메서드
-  async refreshToken(refreshTokenDto: any) {
+  async refreshToken(refreshToken: string) {
     try {
-      const response = await axios.post(`${this.authServiceUrl}/auth/refresh`, refreshTokenDto);
+      const response = await axios.post(`${this.authServiceUrl}/auth/refresh`, { refreshToken });
       return response.data;
     } catch (error) {
       this.handleError(error);
