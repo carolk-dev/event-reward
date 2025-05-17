@@ -52,6 +52,12 @@ cd event
 npm run start:dev
 ```
 
+### [개발용] root에서 전체 실행시
+
+```bash
+./dev.sh
+```
+
 ## API 문서
 
 각 서비스의 API 문서는 Swagger를 통해 확인할 수 있습니다:
