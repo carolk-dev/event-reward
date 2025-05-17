@@ -1,0 +1,17 @@
+{
+  "name": "event-reward-system",
+  "version": "1.0.0",
+  "description": "이벤트 보상 시스템 - 마이크로서비스 아키텍처",
+  "scripts": {
+    "start:gateway": "cd gateway && npm run start:dev",
+    "start:auth": "cd auth && npm run start:dev",
+    "start:event": "cd event && npm run start:dev",
+    "dev": "concurrently \"npm run start:auth\" \"npm run start:event\" \"npm run start:gateway\"",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

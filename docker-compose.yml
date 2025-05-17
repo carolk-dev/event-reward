@@ -22,13 +22,14 @@ services:
     container_name: event-reward-gateway
     restart: always
     ports:
-      - "3000:3000"
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - AUTH_SERVICE_URL=http://auth:3001
-      - EVENT_SERVICE_URL=http://event:3002
+      - PORT=${GATEWAY_PORT}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - EVENT_SERVICE_URL=${EVENT_SERVICE_URL}
       - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
     depends_on:
       - auth
       - event
@@ -42,13 +43,13 @@ services:
     container_name: event-reward-auth
     restart: always
     ports:
-      - "3001:3001"
+      - "${AUTH_PORT}:${AUTH_PORT}"
     environment:
       - NODE_ENV=production
-      - PORT=3001
+      - PORT=${AUTH_PORT}
       - MONGODB_URI=mongodb://root:${MONGO_PASSWORD}@mongodb:27017/auth?authSource=admin
       - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRES_IN=1h
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
     depends_on:
       - mongodb
     networks:
@@ -61,12 +62,14 @@ services:
     container_name: event-reward-event
     restart: always
     ports:
-      - "3002:3002"
+      - "${EVENT_PORT}:${EVENT_PORT}"
     environment:
       - NODE_ENV=production
-      - PORT=3002
+      - PORT=${EVENT_PORT}
       - MONGODB_URI=mongodb://root:${MONGO_PASSWORD}@mongodb:27017/event?authSource=admin
-      - AUTH_SERVICE_URL=http://auth:3001
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
     depends_on:
       - mongodb
     networks:

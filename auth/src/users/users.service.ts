@@ -1,22 +1,20 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import * as bcrypt from 'bcrypt';
-import { User, UserDocument } from './schemas/user.schema';
-import { CreateUserDto } from './dto/create-user.dto';
+import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import * as bcrypt from "bcrypt";
+import { User, UserDocument } from "./schemas/user.schema";
+import { CreateUserDto } from "./dto/create-user.dto";
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       // 이메일 중복 확인
       const existingUser = await this.userModel.findOne({ email: createUserDto.email }).exec();
       if (existingUser) {
-        throw new ConflictException('이미 사용 중인 이메일입니다.');
+        throw new ConflictException("이미 사용 중인 이메일입니다.");
       }
 
       const createdUser = new this.userModel(createUserDto);
@@ -44,8 +42,8 @@ export class UsersService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.findByEmail(email);
-    if (user && await this.comparePassword(password, user.password)) {
-      const { password, ...result } = user.toObject();
+    if (user && (await this.comparePassword(password, user.password))) {
+      const { password, ...result } = user;
       return result;
     }
     return null;
@@ -57,23 +55,23 @@ export class UsersService {
 
   async addRole(userId: string, role: string): Promise<User> {
     const user = await this.findOne(userId);
-    
+
     if (!user.roles.includes(role)) {
       user.roles.push(role);
       return this.userModel.findByIdAndUpdate(userId, { roles: user.roles }, { new: true }).exec();
     }
-    
+
     return user;
   }
 
   async removeRole(userId: string, role: string): Promise<User> {
     const user = await this.findOne(userId);
-    
+
     if (user.roles.includes(role)) {
-      user.roles = user.roles.filter(r => r !== role);
+      user.roles = user.roles.filter((r) => r !== role);
       return this.userModel.findByIdAndUpdate(userId, { roles: user.roles }, { new: true }).exec();
     }
-    
+
     return user;
   }
-} 
+}

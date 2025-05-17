@@ -1,13 +1,13 @@
-import { Injectable, HttpService } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import axios from "axios";
 
 @Injectable()
 export class AuthService {
   private authServiceUrl: string;
 
   constructor(private configService: ConfigService) {
-    this.authServiceUrl = this.configService.get<string>('AUTH_SERVICE_URL', 'http://auth:3001');
+    this.authServiceUrl = this.configService.get<string>("AUTH_SERVICE_URL", "http://auth:3001");
   }
 
   async validateUser(payload: any) {
@@ -36,4 +36,4 @@ export class AuthService {
       throw error.response.data;
     }
   }
-} 
+}

@@ -1,9 +1,9 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
-import { EventsModule } from './events/events.module';
-import { RewardsModule } from './rewards/rewards.module';
-import { AuthMiddleware } from './common/middleware/auth.middleware';
+import { Module, NestModule, MiddlewareConsumer } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { MongooseModule } from "@nestjs/mongoose";
+import { EventsModule } from "./events/events.module";
+import { RewardsModule } from "./rewards/rewards.module";
+import { AuthMiddleware } from "./common/middleware/auth.middleware";
 
 @Module({
   imports: [
@@ -13,9 +13,14 @@ import { AuthMiddleware } from './common/middleware/auth.middleware';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
-      }),
+      useFactory: (configService: ConfigService) => {
+        const uri =
+          configService.get<string>("MONGODB_URI") || "mongodb://root:password@localhost:27017/event?authSource=admin";
+        console.log("MongoDB URI:", uri); // 디버깅용
+        return {
+          uri,
+        };
+      },
     }),
     EventsModule,
     RewardsModule,
@@ -25,8 +30,6 @@ import { AuthMiddleware } from './common/middleware/auth.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AuthMiddleware)
-      .forRoutes('*');
+    consumer.apply(AuthMiddleware).forRoutes("*");
   }
-} 
+}
