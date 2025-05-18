@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, Delete, Put, Query } from "@nestjs/common";
 import { EventsService } from "./events.service";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { UpdateEventDto } from "./dto/update-event.dto";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 
 @ApiTags("Events")
 @ApiBearerAuth()
@@ -17,28 +17,25 @@ export class EventsController {
     return this.eventsService.create(createEventDto);
   }
 
-  @ApiOperation({ summary: "모든 이벤트 조회", description: "모든 이벤트 목록을 조회합니다." })
-  @ApiResponse({ status: 200, description: "이벤트 목록이 성공적으로 조회되었습니다." })
-  @Get()
-  async findAll() {
-    return this.eventsService.findAll();
-  }
-
   @ApiOperation({
-    summary: "공개 이벤트 목록 조회",
-    description: "모든 사용자가 접근 가능한 공개 이벤트 목록을 조회합니다.",
+    summary: "이벤트 조회",
+    description: "모든 이벤트 목록을 조회하거나 활성화된 이벤트만 필터링하여 조회합니다.",
   })
   @ApiResponse({ status: 200, description: "이벤트 목록이 성공적으로 조회되었습니다." })
-  @Get("public")
-  async findPublicEvents() {
-    return this.eventsService.findActive();
-  }
-
-  @ApiOperation({ summary: "활성화된 이벤트 조회", description: "현재 활성화된 이벤트 목록을 조회합니다." })
-  @ApiResponse({ status: 200, description: "활성화된 이벤트 목록이 성공적으로 조회되었습니다." })
-  @Get("active")
-  async findActive() {
-    return this.eventsService.findActive();
+  @ApiQuery({
+    name: "active",
+    required: false,
+    type: Boolean,
+    description: "활성화된 이벤트만 조회할지 여부(true/false)",
+  })
+  @Get()
+  async findAll(@Query("active") active?: string) {
+    // active 파라미터가 true일 경우 활성화된 이벤트만 반환
+    if (active === "true") {
+      return this.eventsService.findActive();
+    }
+    // 그 외의 경우 모든 이벤트 반환
+    return this.eventsService.findAll();
   }
 
   @ApiOperation({ summary: "특정 이벤트 조회", description: "ID로 특정 이벤트를 조회합니다." })

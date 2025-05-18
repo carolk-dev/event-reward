@@ -21,28 +21,28 @@ import { AuthGuard } from "../common/guards/auth.guard";
 export class EventController {
   constructor(private eventService: EventService) {}
 
-  @ApiOperation({ summary: "모든 이벤트 조회" })
+  @ApiOperation({
+    summary: "이벤트 조회",
+    description: "모든 이벤트를 조회하거나 활성화된 이벤트만 필터링하여 조회합니다.",
+  })
   @ApiResponse({ status: 200, description: "이벤트 목록 조회 성공" })
   @ApiResponse({ status: 401, description: "인증되지 않은 사용자" })
   @ApiResponse({ status: 403, description: "권한 없음" })
+  @ApiQuery({
+    name: "active",
+    required: false,
+    type: Boolean,
+    description: "활성화된 이벤트만 조회할지 여부(true/false)",
+  })
   @ApiBearerAuth()
   @Get()
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.OPERATOR, UserRole.ADMIN)
-  async getAllEvents() {
+  async getAllEvents(@Query("active") active?: string) {
+    if (active === "true") {
+      return this.eventService.getActiveEvents();
+    }
     return this.eventService.getAllEvents();
-  }
-
-  @ApiOperation({ summary: "활성화된 이벤트 목록 조회" })
-  @ApiResponse({ status: 200, description: "활성화된 이벤트 목록 조회 성공" })
-  @ApiResponse({ status: 401, description: "인증되지 않은 사용자" })
-  @ApiResponse({ status: 403, description: "권한 없음" })
-  @ApiBearerAuth()
-  @Get("/active")
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.OPERATOR, UserRole.ADMIN)
-  async getActiveEvents() {
-    return this.eventService.getActiveEvents();
   }
 
   @ApiOperation({ summary: "특정 이벤트 조회" })
@@ -106,8 +106,17 @@ export class RewardController {
 
   @ApiOperation({ summary: "모든 보상 조회" })
   @ApiResponse({ status: 200, description: "보상 목록 조회 성공" })
+  @ApiQuery({
+    name: "eventId",
+    required: false,
+    type: String,
+    description: "특정 이벤트의 보상만 조회할 이벤트 ID",
+  })
   @Get()
-  async getAllRewards() {
+  async getAllRewards(@Query("eventId") eventId?: string) {
+    if (eventId) {
+      return this.eventService.getRewardsByEventId(eventId);
+    }
     return this.eventService.getAllRewards();
   }
 
@@ -117,14 +126,6 @@ export class RewardController {
   @Get(":id")
   async getRewardById(@Param("id") id: string) {
     return this.eventService.getRewardById(id);
-  }
-
-  @ApiOperation({ summary: "이벤트별 보상 조회" })
-  @ApiResponse({ status: 200, description: "이벤트별 보상 조회 성공" })
-  @ApiResponse({ status: 404, description: "이벤트를 찾을 수 없음" })
-  @Get("event/:eventId")
-  async getRewardsByEventId(@Param("eventId") eventId: string) {
-    return this.eventService.getRewardsByEventId(eventId);
   }
 
   @ApiOperation({ summary: "새 보상 생성" })
@@ -179,30 +180,6 @@ export class RewardController {
     return this.eventService.requestReward(requestData.userId, requestData.rewardId);
   }
 
-  @ApiOperation({ summary: "특정 사용자의 보상 요청 이력 조회" })
-  @ApiResponse({ status: 200, description: "사용자 보상 요청 이력 조회 성공" })
-  @ApiResponse({ status: 401, description: "인증되지 않은 사용자" })
-  @ApiResponse({ status: 404, description: "사용자를 찾을 수 없음" })
-  @ApiBearerAuth()
-  @Get("requests/user/:userId")
-  @UseGuards(AuthGuard)
-  async getUserRewardRequests(@Param("userId") userId: string) {
-    return this.eventService.getUserRewardRequests(userId);
-  }
-
-  @ApiOperation({ summary: "특정 이벤트의 보상 요청 이력 조회" })
-  @ApiResponse({ status: 200, description: "이벤트 보상 요청 이력 조회 성공" })
-  @ApiResponse({ status: 401, description: "인증되지 않은 사용자" })
-  @ApiResponse({ status: 403, description: "권한 없음" })
-  @ApiResponse({ status: 404, description: "이벤트를 찾을 수 없음" })
-  @ApiBearerAuth()
-  @Get("requests/event/:eventId")
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(UserRole.AUDITOR, UserRole.OPERATOR, UserRole.ADMIN)
-  async getRewardRequestsByEvent(@Param("eventId") eventId: string) {
-    return this.eventService.getRewardRequestsByEvent(eventId);
-  }
-
   @ApiOperation({
     summary: "상태별 보상 요청 조회",
     description: "특정 상태의 보상 요청을 조회합니다. 상태가 빈값이면 모든 보상 요청을 조회합니다.",
@@ -217,10 +194,32 @@ export class RewardController {
     required: false,
     description: "조회할 보상 요청의 상태 (pending, approved, rejected)",
   })
+  @ApiQuery({
+    name: "eventId",
+    required: false,
+    type: String,
+    description: "특정 이벤트의 보상 요청만 조회할 이벤트 ID",
+  })
+  @ApiQuery({
+    name: "userId",
+    required: false,
+    type: String,
+    description: "특정 사용자의 보상 요청만 조회할 사용자 ID",
+  })
   @Get("requests")
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.AUDITOR, UserRole.OPERATOR, UserRole.ADMIN)
-  async getRewardRequestsByStatus(@Query("status") status?: RewardRequestStatus) {
+  async getRewardRequestsByStatus(
+    @Query("status") status?: RewardRequestStatus,
+    @Query("eventId") eventId?: string,
+    @Query("userId") userId?: string
+  ) {
+    if (userId) {
+      return this.eventService.getUserRewardRequests(userId);
+    }
+    if (eventId) {
+      return this.eventService.getRewardRequestsByEvent(eventId);
+    }
     return this.eventService.getRewardRequestsByStatus(status);
   }
 }

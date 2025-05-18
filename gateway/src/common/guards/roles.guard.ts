@@ -6,43 +6,30 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>("roles", [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    // 해당 라우트에 필요한 역할 가져오기
+    const requiredRoles = this.reflector.get<string[]>("roles", context.getHandler());
 
-    if (!requiredRoles) {
+    // 라우트에 역할 제한이 없으면 통과
+    if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    // 요청에서 사용자 정보 가져오기
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
 
-    if (!user) {
-      throw new ForbiddenException("접근 권한이 없습니다.");
+    // 역할이 있는지 확인하고 권한 체크
+    if (!user || !user.roles) {
+      throw new ForbiddenException("권한이 없습니다.");
     }
 
-    // role 필드가 있는 경우 (단일 역할)
-    if (user.role) {
-      const hasRole = requiredRoles.some((role) => user.role === role);
+    // 사용자가 필요한 역할 중 하나라도 가지고 있는지 확인
+    const hasRole = requiredRoles.some((role) => user.roles.includes(role));
 
-      if (!hasRole) {
-        throw new ForbiddenException("이 작업을 수행할 권한이 없습니다.");
-      }
-
-      return true;
+    if (!hasRole) {
+      throw new ForbiddenException("해당 작업을 수행할 권한이 없습니다.");
     }
 
-    // roles 필드가 있는 경우 (다중 역할 - 이전 버전 호환성)
-    if (user.roles) {
-      const hasRole = requiredRoles.some((role) => user.roles.includes(role));
-
-      if (!hasRole) {
-        throw new ForbiddenException("이 작업을 수행할 권한이 없습니다.");
-      }
-
-      return true;
-    }
-
-    throw new ForbiddenException("사용자에게 역할 정보가 없습니다.");
+    return true;
   }
 }

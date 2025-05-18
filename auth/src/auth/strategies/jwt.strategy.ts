@@ -8,11 +8,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   private readonly logger = new Logger(JwtStrategy.name);
 
   constructor(private configService: ConfigService) {
+    const jwtSecret = configService.get<string>("JWT_SECRET");
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>("JWT_SECRET"),
+      secretOrKey: jwtSecret,
     });
+
+    Logger.log(`JWT Strategy configured with secret: ${jwtSecret ? "Yes" : "No"}`, JwtStrategy.name);
   }
 
   async validate(payload: any) {

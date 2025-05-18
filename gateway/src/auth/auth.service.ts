@@ -108,7 +108,7 @@ export class AuthService {
 
   async getUserByEmail(email: string) {
     try {
-      const response = await axios.get(`${this.authServiceUrl}/users/email/${email}`);
+      const response = await axios.get(`${this.authServiceUrl}/users?email=${email}`);
       return response.data;
     } catch (error) {
       this.handleError(error);

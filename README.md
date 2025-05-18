@@ -67,3 +67,47 @@ npm run start:dev
 - Event API: http://localhost:3002/api-docs
 
 API 문서는 서비스가 실행 중일 때만 접근 가능합니다.
+
+## API 목록
+
+### 인증 API (Auth)
+
+| 메소드 | 엔드포인트           | 설명                 | 권한            |
+| ------ | -------------------- | -------------------- | --------------- |
+| POST   | /auth/register       | 사용자 등록          | 없음            |
+| POST   | /auth/login          | 로그인               | 없음            |
+| POST   | /auth/refresh        | 토큰 갱신            | 없음            |
+| GET    | /users?email={email} | 이메일로 사용자 조회 | ADMIN, OPERATOR |
+| GET    | /users/{id}          | ID로 사용자 조회     | ADMIN, OPERATOR |
+
+### 이벤트 API (Event)
+
+| 메소드 | 엔드포인트          | 설명                 | 권한            |
+| ------ | ------------------- | -------------------- | --------------- |
+| GET    | /events             | 모든 이벤트 조회     | ADMIN, OPERATOR |
+| GET    | /events?active=true | 활성화된 이벤트 조회 | ADMIN, OPERATOR |
+| GET    | /events/{id}        | 특정 이벤트 조회     | ADMIN, OPERATOR |
+| POST   | /events             | 이벤트 생성          | ADMIN, OPERATOR |
+| PUT    | /events/{id}        | 이벤트 수정          | ADMIN, OPERATOR |
+| DELETE | /events/{id}        | 이벤트 삭제          | ADMIN           |
+
+### 보상 API (Reward)
+
+| 메소드 | 엔드포인트                 | 설명                    | 권한            |
+| ------ | -------------------------- | ----------------------- | --------------- |
+| GET    | /rewards                   | 모든 보상 조회          | 없음            |
+| GET    | /rewards?eventId={eventId} | 특정 이벤트의 보상 조회 | 없음            |
+| GET    | /rewards/{id}              | 특정 보상 조회          | 없음            |
+| POST   | /rewards                   | 보상 생성               | ADMIN, OPERATOR |
+| PUT    | /rewards/{id}              | 보상 수정               | ADMIN, OPERATOR |
+| DELETE | /rewards/{id}              | 보상 삭제               | ADMIN           |
+| POST   | /rewards/request           | 보상 요청               | USER, ADMIN     |
+
+### 보상 요청 API (Reward Request)
+
+| 메소드 | 엔드포인트                          | 설명                    | 권한                     |
+| ------ | ----------------------------------- | ----------------------- | ------------------------ |
+| GET    | /rewards/requests                   | 모든 보상 요청 조회     | AUDITOR, OPERATOR, ADMIN |
+| GET    | /rewards/requests?status={status}   | 상태별 보상 요청 조회   | AUDITOR, OPERATOR, ADMIN |
+| GET    | /rewards/requests?eventId={eventId} | 이벤트별 보상 요청 조회 | AUDITOR, OPERATOR, ADMIN |
+| GET    | /rewards/requests?userId={userId}   | 사용자별 보상 요청 조회 | AUDITOR, OPERATOR, ADMIN |

@@ -48,23 +48,4 @@ export class AuthController {
   async refreshToken(@Body("refreshToken") refreshToken: string) {
     return this.authService.refreshToken(refreshToken);
   }
-
-  @ApiOperation({ summary: "토큰 검증" })
-  @ApiResponse({ status: 200, description: "토큰 검증 성공" })
-  @ApiResponse({ status: 401, description: "유효하지 않은 토큰" })
-  @Post("validate")
-  @HttpCode(HttpStatus.OK)
-  async validateToken(@Body() body: { payload: string }) {
-    return this.authService.validateToken(body.payload);
-  }
-
-  @ApiOperation({ summary: "로그아웃" })
-  @ApiResponse({ status: 200, description: "로그아웃 성공" })
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Post("logout")
-  @HttpCode(HttpStatus.OK)
-  async logout(@Req() req) {
-    return this.authService.logout(req.user.sub);
-  }
 }

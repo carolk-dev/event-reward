@@ -6,8 +6,8 @@
 
 - 이벤트 관리 (생성, 조회, 수정, 삭제)
 - 보상 관리 (생성, 조회, 수정, 삭제)
-- 보상 요청 처리 (요청, 승인, 거절)
-- 보상 지급 이력 관리
+- 보상 요청 처리 (요청)
+- 보상 요청 이력 관리
 
 ## 기술 스택
 
@@ -35,6 +35,7 @@ npm run start:prod
 
 - `GET /events` - 모든 이벤트 조회
 - `GET /events/active` - 현재 활성화된 이벤트만 조회
+- `GET /events/public` - 공개 이벤트 조회
 - `GET /events/:id` - 특정 이벤트 조회
 - `POST /events` - 새 이벤트 생성 [관리자만]
 - `PUT /events/:id` - 이벤트 정보 업데이트 [관리자만]
@@ -44,6 +45,7 @@ npm run start:prod
 
 - `GET /rewards` - 모든 보상 조회
 - `GET /rewards/:id` - 특정 보상 조회
+- `GET /rewards/event/:eventId` - 특정 이벤트의 보상 조회
 - `POST /rewards` - 새 보상 생성 [관리자만]
 - `PUT /rewards/:id` - 보상 정보 업데이트 [관리자만]
 - `DELETE /rewards/:id` - 보상 삭제 [관리자만]
@@ -51,8 +53,6 @@ npm run start:prod
 ### 보상 요청 관련
 
 - `POST /rewards/request` - 보상 요청 [로그인 필요]
-- `POST /rewards/approve/:id` - 보상 요청 승인 [관리자/감사자만]
-- `POST /rewards/reject/:id` - 보상 요청 거절 [관리자/감사자만]
 - `GET /rewards/requests/user/:userId` - 특정 사용자의 보상 요청 조회 [로그인 필요]
-- `GET /rewards/requests/all` - 모든 보상 요청 조회 [관리자/감사자만]
-- `GET /rewards/requests/pending` - 대기 중인 보상 요청만 조회 [관리자/감사자만] 
+- `GET /rewards/requests/event/:eventId` - 특정 이벤트의 보상 요청 조회 [관리자/감사자만]
+- `GET /rewards/requests` - 상태별 보상 요청 조회 [관리자/감사자만]

@@ -50,18 +50,9 @@ export class EventService {
     }
   }
 
-  async getPublicEvents() {
-    try {
-      const response = await axios.get(`${this.eventServiceUrl}/events/public`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
   async getActiveEvents() {
     try {
-      const response = await axios.get(`${this.eventServiceUrl}/events/active`);
+      const response = await axios.get(`${this.eventServiceUrl}/events?active=true`);
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -115,7 +106,7 @@ export class EventService {
 
   async getRewardsByEventId(eventId: string) {
     try {
-      const response = await axios.get(`${this.eventServiceUrl}/rewards/event/${eventId}`);
+      const response = await axios.get(`${this.eventServiceUrl}/rewards?eventId=${eventId}`);
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -161,65 +152,9 @@ export class EventService {
     }
   }
 
-  async approveReward(rewardRequestId: string) {
-    try {
-      const response = await axios.post(`${this.eventServiceUrl}/rewards/approve/${rewardRequestId}`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  async rejectReward(rewardRequestId: string, reason: string) {
-    try {
-      const response = await axios.post(`${this.eventServiceUrl}/rewards/reject/${rewardRequestId}`, {
-        reason,
-      });
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  async getAllRewardRequests() {
-    try {
-      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests/all`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  async getPendingRewardRequests() {
-    try {
-      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests/pending`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  async getApprovedRewardRequests() {
-    try {
-      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests/approved`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  async getRejectedRewardRequests() {
-    try {
-      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests/rejected`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
   async getUserRewardRequests(userId: string) {
     try {
-      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests/user/${userId}`);
+      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests?userId=${userId}`);
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -228,16 +163,7 @@ export class EventService {
 
   async getRewardRequestsByEvent(eventId: string) {
     try {
-      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests/event/${eventId}`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  async getRewardRequestById(requestId: string) {
-    try {
-      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests/${requestId}`);
+      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests?eventId=${eventId}`);
       return response.data;
     } catch (error) {
       this.handleError(error);
