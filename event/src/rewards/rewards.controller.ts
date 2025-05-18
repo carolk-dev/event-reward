@@ -7,7 +7,6 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from "@ne
 import { RewardRequestStatus } from "./schemas/reward-request.schema";
 
 @ApiTags("Rewards")
-@ApiBearerAuth()
 @Controller()
 export class RewardsController {
   constructor(private readonly rewardsService: RewardsService) {}

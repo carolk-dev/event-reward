@@ -112,7 +112,10 @@ export class RewardController {
     type: String,
     description: "특정 이벤트의 보상만 조회할 이벤트 ID",
   })
+  @ApiBearerAuth()
   @Get()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.OPERATOR, UserRole.ADMIN)
   async getAllRewards(@Query("eventId") eventId?: string) {
     if (eventId) {
       return this.eventService.getRewardsByEventId(eventId);
@@ -124,6 +127,9 @@ export class RewardController {
   @ApiResponse({ status: 200, description: "보상 조회 성공" })
   @ApiResponse({ status: 404, description: "보상을 찾을 수 없음" })
   @Get(":id")
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.OPERATOR, UserRole.ADMIN)
   async getRewardById(@Param("id") id: string) {
     return this.eventService.getRewardById(id);
   }
