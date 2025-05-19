@@ -37,6 +37,21 @@ export class RewardsService {
     return this.rewardModel.find({ event: eventId }).populate("event").exec();
   }
 
+  async findRewardsWithFilters(filters: { eventId?: string }): Promise<Reward[]> {
+    const { eventId } = filters;
+    const query: any = {};
+
+    // 이벤트 ID 필터 추가
+    if (eventId) {
+      // 먼저 해당 이벤트가 존재하는지 확인
+      await this.eventsService.findOne(eventId);
+      query.event = eventId;
+    }
+
+    // 최종 쿼리 실행
+    return this.rewardModel.find(query).populate("event").exec();
+  }
+
   async findOne(id: string): Promise<Reward> {
     const reward = await this.rewardModel.findById(id).populate("event").exec();
     if (!reward) {
@@ -72,7 +87,6 @@ export class RewardsService {
 
     // 보상이 존재하는지 확인
     const reward = await this.findOne(rewardId);
-    console.log(reward.event);
     // 이벤트 정보 조회
     const now = new Date();
 
@@ -188,5 +202,43 @@ export class RewardsService {
     }
 
     return this.rewardRequestModel.find({ status }).populate("reward").exec();
+  }
+
+  async findRewardRequestsWithFilters(filters: {
+    status?: RewardRequestStatus;
+    userId?: string;
+    eventId?: string;
+  }): Promise<RewardRequest[]> {
+    const { status, userId, eventId } = filters;
+    const query: any = {};
+
+    // 상태 필터 추가
+    if (status) {
+      query.status = status;
+    }
+
+    // 사용자 ID 필터 추가
+    if (userId) {
+      query.userId = userId;
+    }
+
+    // 이벤트 ID 필터가 있는 경우, 관련 보상 ID들을 찾아 쿼리에 추가
+    if (eventId) {
+      // 해당 이벤트가 존재하는지 확인
+      await this.eventsService.findOne(eventId);
+
+      // 해당 이벤트에 속한 모든 보상 ID 조회
+      const rewards = await this.rewardModel.find({ event: eventId }).exec();
+
+      if (rewards.length === 0) {
+        return []; // 보상이 없으면 빈 배열 반환
+      }
+
+      const rewardIds = rewards.map((reward) => reward._id);
+      query.reward = { $in: rewardIds };
+    }
+
+    // 최종 쿼리 실행
+    return this.rewardRequestModel.find(query).populate("reward").exec();
   }
 }

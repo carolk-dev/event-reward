@@ -33,6 +33,10 @@ export class EventsController {
     if (active === "true") {
       return this.eventsService.findActive();
     }
+    // active 파라미터가 false일 경우 비활성화된 이벤트만 반환
+    if (active === "false") {
+      return this.eventsService.findInactive();
+    }
     // 그 외의 경우 모든 이벤트 반환
     return this.eventsService.findAll();
   }

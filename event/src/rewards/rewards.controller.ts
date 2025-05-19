@@ -31,10 +31,7 @@ export class RewardsController {
   })
   @Get("rewards")
   async findAll(@Query("eventId") eventId?: string) {
-    if (eventId) {
-      return this.rewardsService.findByEventId(eventId);
-    }
-    return this.rewardsService.findAll();
+    return this.rewardsService.findRewardsWithFilters({ eventId });
   }
 
   @ApiOperation({ summary: "특정 보상 조회", description: "ID로 특정 보상을 조회합니다." })
@@ -64,7 +61,7 @@ export class RewardsController {
   @ApiOperation({ summary: "보상 요청", description: "사용자가 특정 보상을 요청합니다." })
   @ApiResponse({ status: 201, description: "보상 요청이 성공적으로 생성되었습니다." })
   @ApiResponse({ status: 400, description: "잘못된 요청 형식입니다." })
-  @Post("rewards/request")
+  @Post("reward-requests")
   async requestReward(@Body() rewardRequestDto: RewardRequestDto) {
     return this.rewardsService.requestReward(rewardRequestDto);
   }
@@ -92,18 +89,16 @@ export class RewardsController {
     type: String,
     description: "특정 사용자의 보상 요청만 조회할 사용자 ID",
   })
-  @Get("rewards/requests")
+  @Get("reward-requests")
   async findRewardRequestsByStatus(
     @Query("status") status?: RewardRequestStatus,
     @Query("eventId") eventId?: string,
     @Query("userId") userId?: string
   ) {
-    if (userId) {
-      return this.rewardsService.findRewardRequestsByUser(userId);
-    }
-    if (eventId) {
-      return this.rewardsService.findRewardRequestsByEvent(eventId);
-    }
-    return this.rewardsService.findRewardRequestsByStatus(status);
+    return this.rewardsService.findRewardRequestsWithFilters({
+      status,
+      eventId,
+      userId,
+    });
   }
 }

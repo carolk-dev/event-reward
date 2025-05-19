@@ -41,18 +41,22 @@ export class EventService {
     }
   }
 
-  async getEventById(id: string) {
+  async getAllEventsWithParams(active?: string) {
     try {
-      const response = await axios.get(`${this.eventServiceUrl}/events/${id}`);
+      let url = `${this.eventServiceUrl}/events`;
+      if (active !== undefined) {
+        url += `?active=${active}`;
+      }
+      const response = await axios.get(url);
       return response.data;
     } catch (error) {
       this.handleError(error);
     }
   }
 
-  async getActiveEvents() {
+  async getEventById(id: string) {
     try {
-      const response = await axios.get(`${this.eventServiceUrl}/events?active=true`);
+      const response = await axios.get(`${this.eventServiceUrl}/events/${id}`);
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -89,6 +93,28 @@ export class EventService {
   async getAllRewards() {
     try {
       const response = await axios.get(`${this.eventServiceUrl}/rewards`);
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
+  async getRewardsWithParams(params?: Record<string, string>) {
+    try {
+      let url = `${this.eventServiceUrl}/rewards`;
+
+      // 쿼리 파라미터가 있으면 URL에 추가
+      if (params && Object.keys(params).length > 0) {
+        const queryParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(params)) {
+          if (value !== undefined) {
+            queryParams.append(key, value);
+          }
+        }
+        url += `?${queryParams.toString()}`;
+      }
+
+      const response = await axios.get(url);
       return response.data;
     } catch (error) {
       this.handleError(error);
@@ -142,7 +168,7 @@ export class EventService {
 
   async requestReward(userId: string, rewardId: string) {
     try {
-      const response = await axios.post(`${this.eventServiceUrl}/rewards/request`, {
+      const response = await axios.post(`${this.eventServiceUrl}/reward-requests`, {
         userId,
         rewardId,
       });
@@ -152,29 +178,21 @@ export class EventService {
     }
   }
 
-  async getUserRewardRequests(userId: string) {
+  async getRewardRequestsWithParams(params?: Record<string, string>) {
     try {
-      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests?userId=${userId}`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
+      let url = `${this.eventServiceUrl}/reward-requests`;
 
-  async getRewardRequestsByEvent(eventId: string) {
-    try {
-      const response = await axios.get(`${this.eventServiceUrl}/rewards/requests?eventId=${eventId}`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
+      // 쿼리 파라미터가 있으면 URL에 추가
+      if (params && Object.keys(params).length > 0) {
+        const queryParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(params)) {
+          if (value !== undefined) {
+            queryParams.append(key, value);
+          }
+        }
+        url += `?${queryParams.toString()}`;
+      }
 
-  async getRewardRequestsByStatus(status?: string) {
-    try {
-      const url = status
-        ? `${this.eventServiceUrl}/rewards/requests?status=${status}`
-        : `${this.eventServiceUrl}/rewards/requests`;
       const response = await axios.get(url);
       return response.data;
     } catch (error) {

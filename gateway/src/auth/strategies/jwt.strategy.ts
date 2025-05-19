@@ -34,18 +34,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException("유효하지 않은 토큰 형식입니다.");
       }
 
-      // role이 단수형으로 존재하는 경우 roles 배열로 변환
-      let roles = payload.roles || [];
-      if (payload.role && !payload.roles) {
-        this.logger.debug(`role '${payload.role}'을 roles 배열로 변환합니다`);
-        roles = Array.isArray(payload.role) ? payload.role : [payload.role];
-      }
-      console.log(roles);
       // 사용자 정보를 반환
       return {
         _id: payload.sub,
         email: payload.email,
-        roles: roles,
+        role: payload.role,
         ...payload,
       };
     } catch (error) {

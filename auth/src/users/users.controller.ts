@@ -1,10 +1,10 @@
 import { Controller, Get, Param, Post, UseGuards, Body, Put, Delete, Query } from "@nestjs/common";
 import { UsersService } from "./users.service";
-import { JwtAuthGuard } from "../common/guards/jwt-auth.guard";
-import { RolesGuard } from "../common/guards/roles.guard";
-import { Roles } from "../common/decorators/roles.decorator";
+
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
+import { SetRoleDto } from "./dto/set-role.dto";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiBody } from "@nestjs/swagger";
+import { UserRole } from "../common/constants/roles";
 
 @ApiTags("Users")
 @Controller("users")
@@ -63,8 +63,30 @@ export class UsersController {
   @ApiResponse({ status: 401, description: "인증되지 않은 사용자" })
   @ApiResponse({ status: 403, description: "권한 없음" })
   @ApiResponse({ status: 404, description: "사용자를 찾을 수 없음" })
+  @ApiBody({
+    type: SetRoleDto,
+    description: "설정할 사용자 역할",
+    examples: {
+      user: {
+        value: { role: UserRole.USER },
+        summary: "일반 사용자",
+      },
+      operator: {
+        value: { role: UserRole.OPERATOR },
+        summary: "운영자",
+      },
+      admin: {
+        value: { role: UserRole.ADMIN },
+        summary: "관리자",
+      },
+      auditor: {
+        value: { role: UserRole.AUDITOR },
+        summary: "감사자",
+      },
+    },
+  })
   @Post(":id/roles")
-  setRole(@Param("id") id: string, @Body() roleData: { role: string }) {
-    return this.usersService.setRole(id, roleData.role);
+  setRole(@Param("id") id: string, @Body() roleDto: SetRoleDto) {
+    return this.usersService.setRole(id, roleDto.role);
   }
 }

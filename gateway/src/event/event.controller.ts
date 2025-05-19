@@ -39,10 +39,7 @@ export class EventController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.OPERATOR, UserRole.ADMIN)
   async getAllEvents(@Query("active") active?: string) {
-    if (active === "true") {
-      return this.eventService.getActiveEvents();
-    }
-    return this.eventService.getAllEvents();
+    return this.eventService.getAllEventsWithParams(active);
   }
 
   @ApiOperation({ summary: "특정 이벤트 조회" })
@@ -98,7 +95,7 @@ export class EventController {
   }
 }
 
-// 보상 및 보상 요청 관련 API
+// 보상 관련 API
 @ApiTags("Rewards")
 @Controller("rewards")
 export class RewardController {
@@ -117,10 +114,10 @@ export class RewardController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.OPERATOR, UserRole.ADMIN)
   async getAllRewards(@Query("eventId") eventId?: string) {
-    if (eventId) {
-      return this.eventService.getRewardsByEventId(eventId);
-    }
-    return this.eventService.getAllRewards();
+    const params: Record<string, string> = {};
+    if (eventId !== undefined) params.eventId = eventId;
+
+    return this.eventService.getRewardsWithParams(params);
   }
 
   @ApiOperation({ summary: "특정 보상 조회" })
@@ -172,6 +169,13 @@ export class RewardController {
   async deleteReward(@Param("id") id: string) {
     return this.eventService.deleteReward(id);
   }
+}
+
+// 보상 요청 관련 API
+@ApiTags("Reward Requests")
+@Controller("reward-requests")
+export class RewardRequestController {
+  constructor(private eventService: EventService) {}
 
   @ApiOperation({ summary: "보상 요청" })
   @ApiResponse({ status: 201, description: "보상 요청 성공" })
@@ -179,7 +183,7 @@ export class RewardController {
   @ApiResponse({ status: 403, description: "권한 없음" })
   @ApiResponse({ status: 400, description: "잘못된 요청 또는 중복 요청" })
   @ApiBearerAuth()
-  @Post("request")
+  @Post()
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.USER, UserRole.ADMIN)
   async requestReward(@Body() requestData: RewardRequestDto) {
@@ -212,7 +216,7 @@ export class RewardController {
     type: String,
     description: "특정 사용자의 보상 요청만 조회할 사용자 ID",
   })
-  @Get("requests")
+  @Get()
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(UserRole.AUDITOR, UserRole.OPERATOR, UserRole.ADMIN)
   async getRewardRequestsByStatus(
@@ -220,12 +224,13 @@ export class RewardController {
     @Query("eventId") eventId?: string,
     @Query("userId") userId?: string
   ) {
-    if (userId) {
-      return this.eventService.getUserRewardRequests(userId);
-    }
-    if (eventId) {
-      return this.eventService.getRewardRequestsByEvent(eventId);
-    }
-    return this.eventService.getRewardRequestsByStatus(status);
+    // 모든 쿼리 파라미터를 객체로 수집
+    const params: Record<string, string> = {};
+    if (status !== undefined) params.status = status;
+    if (eventId !== undefined) params.eventId = eventId;
+    if (userId !== undefined) params.userId = userId;
+
+    // 쿼리 파라미터를 그대로 전달
+    return this.eventService.getRewardRequestsWithParams(params);
   }
 }
