@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 
 export type EventDocument = Event & Document;
 
@@ -23,4 +23,4 @@ export class Event {
   isActive: boolean;
 }
 
-export const EventSchema = SchemaFactory.createForClass(Event); 
+export const EventSchema = SchemaFactory.createForClass(Event);

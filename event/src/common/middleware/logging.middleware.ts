@@ -16,7 +16,6 @@ export class LoggingMiddleware implements NestMiddleware {
     // 응답 완료 후 로그를 위한 이벤트 리스너
     res.on("finish", () => {
       const { statusCode } = res;
-      const contentLength = res.get("content-length") || 0;
       const responseTime = Date.now() - startTime;
 
       const logMessage = `[EVENT-SERVICE] [종료] ${method} ${originalUrl} - 상태: ${statusCode} - 처리시간: ${responseTime}ms - IP: ${ip}`;

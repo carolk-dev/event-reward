@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from "@nestjs/common";
+import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Reward, RewardDocument } from "./schemas/reward.schema";
@@ -7,7 +7,6 @@ import { EventsService } from "../events/events.service";
 import { CreateRewardDto } from "./dto/create-reward.dto";
 import { UpdateRewardDto } from "./dto/update-reward.dto";
 import { RewardRequestDto } from "./dto/reward-request.dto";
-import { Types } from "mongoose";
 @Injectable()
 export class RewardsService {
   constructor(
@@ -303,7 +302,7 @@ export class RewardsService {
   /**
    * 사용자 자격 조건 검증 메서드 (외부 서비스 호출 가정)
    */
-  private async verifyUserQualification(userId: string, reward: Reward): Promise<boolean> {
+  private async verifyUserQualification(_userId: string, _reward: Reward): Promise<boolean> {
     // 실제 구현에서는 외부 API 호출 또는 다른 검증 로직 구현
     // 예시로 모든 사용자 조건 만족으로 간주
     return true;

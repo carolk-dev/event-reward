@@ -19,7 +19,6 @@ export class EventsService {
   }
 
   async findActive(): Promise<Event[]> {
-    const now = new Date();
     return this.eventModel
       .find({
         isActive: true,
@@ -28,7 +27,6 @@ export class EventsService {
   }
 
   async findInactive(): Promise<Event[]> {
-    const now = new Date();
     return this.eventModel
       .find({
         $or: [{ isActive: false }],

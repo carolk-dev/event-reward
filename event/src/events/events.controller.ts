@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Put, Query } from "@nestjs/
 import { EventsService } from "./events.service";
 import { CreateEventDto } from "./dto/create-event.dto";
 import { UpdateEventDto } from "./dto/update-event.dto";
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from "@nestjs/swagger";
 
 @ApiTags("Events")
 @Controller("events")
