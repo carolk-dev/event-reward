@@ -34,11 +34,25 @@ NestJS, MongoDB 기반의 마이크로서비스 아키텍처로 구현된 이벤
 
 ## 시작하기
 
+### 각 서비스별 Docker 실행하기
+
 ```bash
-# 시스템 실행
+# Gateway 서비스만 Docker로 실행
+cd gateway
 docker-compose up -d
 
-# 개발 모드로 각 서비스 실행
+# Auth 서비스만 Docker로 실행
+cd auth
+docker-compose up -d
+
+# Event 서비스만 Docker로 실행
+cd event
+docker-compose up -d
+```
+
+### 개발 모드로 서비스 실행하기
+
+```bash
 # Gateway 서비스
 cd gateway
 npm run start:dev
@@ -82,14 +96,15 @@ API 문서는 서비스가 실행 중일 때만 접근 가능합니다.
 
 ### 이벤트 API (Event)
 
-| 메소드 | 엔드포인트          | 설명                 | 권한            |
-| ------ | ------------------- | -------------------- | --------------- |
-| GET    | /events             | 모든 이벤트 조회     | ADMIN, OPERATOR |
-| GET    | /events?active=true | 활성화된 이벤트 조회 | ADMIN, OPERATOR |
-| GET    | /events/{id}        | 특정 이벤트 조회     | ADMIN, OPERATOR |
-| POST   | /events             | 이벤트 생성          | ADMIN, OPERATOR |
-| PUT    | /events/{id}        | 이벤트 수정          | ADMIN, OPERATOR |
-| DELETE | /events/{id}        | 이벤트 삭제          | ADMIN           |
+| 메소드 | 엔드포인트           | 설명                   | 권한            |
+| ------ | -------------------- | ---------------------- | --------------- |
+| GET    | /events              | 모든 이벤트 조회       | ADMIN, OPERATOR |
+| GET    | /events?active=true  | 활성화된 이벤트 조회   | ADMIN, OPERATOR |
+| GET    | /events?active=false | 비활성화된 이벤트 조회 | ADMIN, OPERATOR |
+| GET    | /events/{id}         | 특정 이벤트 조회       | ADMIN, OPERATOR |
+| POST   | /events              | 이벤트 생성            | ADMIN, OPERATOR |
+| PUT    | /events/{id}         | 이벤트 수정            | ADMIN, OPERATOR |
+| DELETE | /events/{id}         | 이벤트 삭제            | ADMIN           |
 
 ### 보상 API (Reward)
 
@@ -101,13 +116,14 @@ API 문서는 서비스가 실행 중일 때만 접근 가능합니다.
 | POST   | /rewards                   | 보상 생성               | ADMIN, OPERATOR |
 | PUT    | /rewards/{id}              | 보상 수정               | ADMIN, OPERATOR |
 | DELETE | /rewards/{id}              | 보상 삭제               | ADMIN           |
-| POST   | /rewards/request           | 보상 요청               | USER, ADMIN     |
 
 ### 보상 요청 API (Reward Request)
 
-| 메소드 | 엔드포인트                          | 설명                    | 권한                     |
-| ------ | ----------------------------------- | ----------------------- | ------------------------ |
-| GET    | /rewards/requests                   | 모든 보상 요청 조회     | AUDITOR, OPERATOR, ADMIN |
-| GET    | /rewards/requests?status={status}   | 상태별 보상 요청 조회   | AUDITOR, OPERATOR, ADMIN |
-| GET    | /rewards/requests?eventId={eventId} | 이벤트별 보상 요청 조회 | AUDITOR, OPERATOR, ADMIN |
-| GET    | /rewards/requests?userId={userId}   | 사용자별 보상 요청 조회 | AUDITOR, OPERATOR, ADMIN |
+| 메소드 | 엔드포인트                                                         | 설명                                  | 권한                     |
+| ------ | ------------------------------------------------------------------ | ------------------------------------- | ------------------------ |
+| POST   | /reward-requests                                                   | 보상 요청                             | USER, ADMIN              |
+| GET    | /reward-requests                                                   | 모든 보상 요청 조회                   | AUDITOR, OPERATOR, ADMIN |
+| GET    | /reward-requests?status={status}                                   | 상태별 보상 요청 조회                 | AUDITOR, OPERATOR, ADMIN |
+| GET    | /reward-requests?eventId={eventId}                                 | 이벤트별 보상 요청 조회               | AUDITOR, OPERATOR, ADMIN |
+| GET    | /reward-requests?userId={userId}                                   | 사용자별 보상 요청 조회               | AUDITOR, OPERATOR, ADMIN |
+| GET    | /reward-requests?status={status}&eventId={eventId}&userId={userId} | 여러 조건으로 필터링된 보상 요청 조회 | AUDITOR, OPERATOR, ADMIN |
