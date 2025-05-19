@@ -85,83 +85,141 @@ export class RewardsService {
   async requestReward(rewardRequestDto: RewardRequestDto): Promise<RewardRequest> {
     const { userId, rewardId } = rewardRequestDto;
 
-    // 보상이 존재하는지 확인
-    const reward = await this.findOne(rewardId);
-    // 이벤트 정보 조회
-    const now = new Date();
-
-    // 이벤트가 활성 상태인지 확인
-    if (!reward.event.isActive || now < reward.event.startDate || now > reward.event.endDate) {
-      throw new BadRequestException("진행 중인 이벤트가 아닙니다.");
-    }
-
-    // TODO: 사용자가 이벤트 조건을 달성했는지 확인 to 3rd party api
-
-    // 1. 동일한 사용자가 같은 보상에 대해 PENDING 상태의 요청이 있는지 확인
-    const existingPendingRequest = await this.rewardRequestModel
-      .findOne({
-        userId,
-        reward: rewardId,
-        status: RewardRequestStatus.PENDING,
-      })
-      .exec();
-
-    if (existingPendingRequest) {
-      throw new ConflictException("이미 처리 중인 보상 요청이 있습니다. 승인이 완료될 때까지 기다려주세요.");
-    }
-
-    // 2. 동일한 사용자가 같은 보상을 이미 받았는지 확인 (APPROVED 상태)
-    const existingApprovedRequest = await this.rewardRequestModel
-      .findOne({
-        userId,
-        reward: rewardId,
-        status: RewardRequestStatus.APPROVED,
-      })
-      .exec();
-
-    if (existingApprovedRequest) {
-      throw new ConflictException("이미 해당 보상을 지급받았습니다. 동일한 이벤트에서 중복 보상은 불가능합니다.");
-    }
-
-    // 3. 동일한 사용자가 같은 이벤트의 다른 보상을 이미 받았는지 확인 (선택적)
-    const otherRewardsFromSameEvent = await this.rewardModel
-      .find({
-        event: reward.event,
-        _id: { $ne: rewardId },
-      })
-      .exec();
-
-    if (otherRewardsFromSameEvent.length > 0) {
-      const otherRewardIds = otherRewardsFromSameEvent.map((r) => r._id);
-
-      const existingApprovedRequestForSameEvent = await this.rewardRequestModel
-        .findOne({
-          userId,
-          reward: { $in: otherRewardIds },
-          status: RewardRequestStatus.APPROVED,
-        })
-        .exec();
-
-      if (existingApprovedRequestForSameEvent) {
-        throw new ConflictException(
-          "이미 이 이벤트의 다른 보상을 지급받았습니다. 하나의 이벤트에서는 하나의 보상만 받을 수 있습니다."
-        );
-      }
-    }
-
-    // 보상 수량이 충분한지 확인
-    if (reward.claimed >= reward.quantity) {
-      throw new BadRequestException("보상이 모두 소진되었습니다.");
-    }
-
-    // 보상 요청 생성
+    // 먼저 요청을 PENDING 상태로 생성하고 DB에 저장
     const rewardRequest = new this.rewardRequestModel({
       userId,
       reward: rewardId,
       status: RewardRequestStatus.PENDING,
     });
 
-    return rewardRequest.save();
+    const savedRequest = await rewardRequest.save();
+
+    try {
+      // 1. 이벤트 참여 조건을 만족하는지 외부 API 호출로 검증
+      const reward = await this.findOne(rewardId);
+      const eventId = reward.event.toString(); // Mongoose ObjectId를 문자열로 변환
+      const isEventConditionMet = await this.verifyEventConditions(userId, eventId);
+
+      if (!isEventConditionMet) {
+        return this.updateRequestStatus(
+          savedRequest._id,
+          RewardRequestStatus.REJECTED,
+          "이벤트 참여 조건을 충족하지 않습니다."
+        );
+      }
+
+      // 2. 보상이 존재하는지 확인
+      const now = new Date();
+
+      // 3. 이벤트가 활성 상태인지 확인
+      if (!reward.event.isActive || now < reward.event.startDate || now > reward.event.endDate) {
+        return this.updateRequestStatus(savedRequest._id, RewardRequestStatus.REJECTED, "진행 중인 이벤트가 아닙니다.");
+      }
+
+      // 4. 동일한 사용자가 같은 보상에 대해 APPROVED 상태의 요청이 있는지 확인
+      const existingApprovedRequest = await this.rewardRequestModel
+        .findOne({
+          userId,
+          reward: rewardId,
+          status: RewardRequestStatus.APPROVED,
+          _id: { $ne: savedRequest._id }, // 현재 요청 제외
+        })
+        .exec();
+
+      if (existingApprovedRequest) {
+        return this.updateRequestStatus(
+          savedRequest._id,
+          RewardRequestStatus.REJECTED,
+          "이미 해당 보상을 지급받았습니다. 동일한 이벤트에서 중복 보상은 불가능합니다."
+        );
+      }
+
+      // 5. 동일한 사용자가 같은 이벤트의 다른 보상을 이미 받았는지 확인
+      const otherRewardsFromSameEvent = await this.rewardModel
+        .find({
+          event: reward.event,
+          _id: { $ne: rewardId },
+        })
+        .exec();
+
+      if (otherRewardsFromSameEvent.length > 0) {
+        const otherRewardIds = otherRewardsFromSameEvent.map((r) => r._id);
+
+        const existingApprovedRequestForSameEvent = await this.rewardRequestModel
+          .findOne({
+            userId,
+            reward: { $in: otherRewardIds },
+            status: RewardRequestStatus.APPROVED,
+          })
+          .exec();
+
+        if (existingApprovedRequestForSameEvent) {
+          return this.updateRequestStatus(
+            savedRequest._id,
+            RewardRequestStatus.REJECTED,
+            "이미 이 이벤트의 다른 보상을 지급받았습니다. 하나의 이벤트에서는 하나의 보상만 받을 수 있습니다."
+          );
+        }
+      }
+
+      // 6. 보상 수량이 충분한지 확인
+      if (reward.claimed >= reward.quantity) {
+        return this.updateRequestStatus(savedRequest._id, RewardRequestStatus.REJECTED, "보상이 모두 소진되었습니다.");
+      }
+
+      // 7. 사용자 자격 조건 검증
+      const isUserQualified = await this.verifyUserQualification(userId, reward);
+
+      if (!isUserQualified) {
+        return this.updateRequestStatus(
+          savedRequest._id,
+          RewardRequestStatus.REJECTED,
+          "사용자가 보상 조건을 충족하지 않습니다."
+        );
+      }
+
+      // 8. 외부 보상 발송 API 호출
+      const isRewardSent = await this.sendReward(userId, reward);
+
+      if (!isRewardSent) {
+        return this.updateRequestStatus(savedRequest._id, RewardRequestStatus.REJECTED, "보상 발송에 실패했습니다.");
+      }
+
+      // 9. 보상 발송 성공 시 상태를 approved로 업데이트하고 보상 수량 증가
+      const rewardDoc = await this.rewardModel.findById(rewardId).exec();
+      rewardDoc.claimed += 1;
+      await rewardDoc.save();
+
+      return this.updateRequestStatus(savedRequest._id, RewardRequestStatus.APPROVED, null, new Date());
+    } catch (error) {
+      // 에러 발생 시 요청 상태를 rejected로 업데이트
+      return this.updateRequestStatus(
+        savedRequest._id,
+        RewardRequestStatus.REJECTED,
+        `처리 중 오류가 발생했습니다: ${error.message}`
+      );
+    }
+  }
+
+  /**
+   * 요청 상태 업데이트 헬퍼 메서드
+   */
+  private async updateRequestStatus(
+    requestId: any,
+    status: RewardRequestStatus,
+    rejectionReason?: string,
+    approvedAt?: Date
+  ): Promise<RewardRequest> {
+    const updateData: any = { status };
+
+    if (status === RewardRequestStatus.REJECTED) {
+      updateData.rejectionReason = rejectionReason;
+      updateData.rejectedAt = new Date();
+    } else if (status === RewardRequestStatus.APPROVED) {
+      updateData.approvedAt = approvedAt || new Date();
+    }
+
+    return this.rewardRequestModel.findByIdAndUpdate(requestId, updateData, { new: true }).populate("reward").exec();
   }
 
   async findRewardRequestsByUser(userId: string): Promise<RewardRequest[]> {
@@ -240,5 +298,47 @@ export class RewardsService {
 
     // 최종 쿼리 실행
     return this.rewardRequestModel.find(query).populate("reward").exec();
+  }
+
+  /**
+   * 사용자 자격 조건 검증 메서드 (외부 서비스 호출 가정)
+   */
+  private async verifyUserQualification(userId: string, reward: Reward): Promise<boolean> {
+    // 실제 구현에서는 외부 API 호출 또는 다른 검증 로직 구현
+    // 예시로 모든 사용자 조건 만족으로 간주
+    return true;
+  }
+
+  /**
+   * 외부 이벤트 조건 검증 API 호출 메서드
+   */
+  private async verifyEventConditions(userId: string, eventId: string): Promise<boolean> {
+    try {
+      // 실제 구현시 외부 API 호출 (예: 이벤트 조건 검증 시스템)
+      console.log(`이벤트 조건 검증: 사용자 ${userId}가 이벤트 ${eventId}의 참여 조건을 만족하는지 확인`);
+
+      // 외부 API 호출 성공 가정
+      // 실제 구현에서는 외부 API 응답에 따라 true/false 반환
+      return true;
+    } catch (error) {
+      console.error("이벤트 조건 검증 실패:", error);
+      return false;
+    }
+  }
+
+  /**
+   * 외부 보상 발송 API 호출 메서드
+   */
+  private async sendReward(userId: string, reward: Reward): Promise<boolean> {
+    try {
+      // 실제 구현시 외부 API 호출 (예: 보상 지급 시스템, 포인트 시스템 등)
+      console.log(`보상 발송: 사용자 ${userId}에게 ${reward.name} 지급`);
+
+      // 외부 API 호출 성공 가정
+      return true;
+    } catch (error) {
+      console.error("보상 발송 실패:", error);
+      return false;
+    }
   }
 }

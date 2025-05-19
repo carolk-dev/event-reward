@@ -58,8 +58,12 @@ export class RewardsController {
     return this.rewardsService.remove(id);
   }
 
-  @ApiOperation({ summary: "보상 요청", description: "사용자가 특정 보상을 요청합니다." })
-  @ApiResponse({ status: 201, description: "보상 요청이 성공적으로 생성되었습니다." })
+  @ApiOperation({
+    summary: "보상 요청",
+    description:
+      "사용자가 특정 보상을 요청합니다. 요청과 동시에 모든 조건이 검증되고, 조건 충족 시 보상이 즉시 발송됩니다. 상태는 자동으로 approved 또는 rejected로 설정됩니다.",
+  })
+  @ApiResponse({ status: 201, description: "보상 요청이 성공적으로 처리되었습니다." })
   @ApiResponse({ status: 400, description: "잘못된 요청 형식입니다." })
   @Post("reward-requests")
   async requestReward(@Body() rewardRequestDto: RewardRequestDto) {

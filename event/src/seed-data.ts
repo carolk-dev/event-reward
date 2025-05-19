@@ -89,6 +89,8 @@ const rewardRequestsSampleData = [
     status: "rejected",
     createdAt: new Date("2025-05-20"),
     updatedAt: new Date("2025-05-20"),
+    rejectedAt: new Date("2025-05-20"),
+    rejectionReason: "이미 해당 보상을 지급받았습니다. 동일한 이벤트에서 중복 보상은 불가능합니다.",
   },
 
   {
