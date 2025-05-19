@@ -110,10 +110,9 @@ export class RewardsService {
     }
 
     // 3. 동일한 사용자가 같은 이벤트의 다른 보상을 이미 받았는지 확인 (선택적)
-    const eventId = reward.event.toString(); // 이벤트 ID를 문자열로 추출
     const otherRewardsFromSameEvent = await this.rewardModel
       .find({
-        event: eventId,
+        event: reward.event,
         _id: { $ne: rewardId },
       })
       .exec();
