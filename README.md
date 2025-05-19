@@ -82,6 +82,22 @@ npm run start:dev
 
 API 문서는 서비스가 실행 중일 때만 접근 가능합니다.
 
+## 테스트 데이터 준비하기
+
+개발 및 테스트를 위한 샘플 데이터를 데이터베이스에 추가할 수 있습니다:
+
+```bash
+# Auth 서비스에 테스트 사용자 데이터 추가
+cd auth
+npm run seed
+
+# Event 서비스에 테스트 이벤트 및 보상 데이터 추가
+cd event
+npm run seed
+```
+
+샘플 데이터는 각 서비스의 `src/seed-data.ts` 파일에 정의되어 있습니다.
+
 ## API 목록
 
 ### 인증 API (Auth)
