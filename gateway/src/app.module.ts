@@ -3,6 +3,7 @@ import { ConfigModule } from "@nestjs/config";
 import { AuthModule } from "./auth/auth.module";
 import { EventModule } from "./event/event.module";
 import { AuthMiddleware } from "./common/middleware/auth.middleware";
+import { LoggingMiddleware } from "./common/middleware/logging.middleware";
 
 @Module({
   imports: [
@@ -17,6 +18,10 @@ import { AuthMiddleware } from "./common/middleware/auth.middleware";
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes("*"); // 모든 라우트에 미들웨어 적용
+    // 로깅 미들웨어를 먼저 적용
+    consumer.apply(LoggingMiddleware).forRoutes("*");
+
+    // 인증 미들웨어 적용
+    consumer.apply(AuthMiddleware).forRoutes("*");
   }
 }

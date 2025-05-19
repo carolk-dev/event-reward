@@ -1,8 +1,9 @@
-import { Module } from "@nestjs/common";
+import { Module, MiddlewareConsumer, NestModule } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
+import { LoggingMiddleware } from "./common/middleware/logging.middleware";
 
 @Module({
   imports: [
@@ -13,8 +14,7 @@ import { UsersModule } from "./users/users.module";
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const uri =
-          configService.get<string>("MONGODB_URI") || "mongodb://root:password@localhost:27017/event?authSource=admin";
+        const uri = `${configService.get<string>("MONGO_URI")}`;
         console.log("MongoDB URI:", uri); // 디버깅용
         return {
           uri,
@@ -27,4 +27,8 @@ import { UsersModule } from "./users/users.module";
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggingMiddleware).forRoutes("*");
+  }
+}

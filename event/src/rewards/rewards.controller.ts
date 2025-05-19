@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, Put, ParseEnumPipe, Query }
 import { RewardsService } from "./rewards.service";
 import { CreateRewardDto } from "./dto/create-reward.dto";
 import { UpdateRewardDto } from "./dto/update-reward.dto";
-import { RewardRequestDto, RejectRewardRequestDto } from "./dto/reward-request.dto";
+import { RewardRequestDto } from "./dto/reward-request.dto";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 import { RewardRequestStatus } from "./schemas/reward-request.schema";
 

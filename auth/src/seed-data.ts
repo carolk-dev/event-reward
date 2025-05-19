@@ -2,7 +2,7 @@ import { MongoClient, ObjectId } from "mongodb";
 import * as bcrypt from "bcrypt";
 
 // MongoDB 연결 정보
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://root:password@localhost:27017/auth?authSource=admin";
+const MONGODB_URI = process.env.MONGO_URI;
 
 // 비밀번호 해싱 함수
 async function hashPassword(password: string): Promise<string> {

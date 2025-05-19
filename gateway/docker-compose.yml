@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: event-reward-gateway
+    restart: always
+    ports:
+      - "${GATEWAY_PORT:-3000}:${GATEWAY_PORT:-3000}"
+    environment:
+      - NODE_ENV=production
+      - PORT=${GATEWAY_PORT:-3000}
+      - AUTH_SERVICE_URL=${AUTH_SERVICE_URL:-http://auth:3001}
+      - EVENT_SERVICE_URL=${EVENT_SERVICE_URL:-http://event:3002}
+      - JWT_SECRET=${JWT_SECRET:-default_secret_key_for_development}
+    networks:
+      - public-network
+      - private-network
+
+networks:
+  public-network:
+  private-network:
+

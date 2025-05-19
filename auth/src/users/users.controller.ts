@@ -7,7 +7,6 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
 
 @ApiTags("Users")
-@ApiBearerAuth()
 @Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -22,8 +21,6 @@ export class UsersController {
   @ApiResponse({ status: 404, description: "사용자를 찾을 수 없음" })
   @ApiQuery({ name: "email", required: false, description: "조회할 사용자의 이메일" })
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("admin")
   async findAll(@Query("email") email?: string) {
     if (email) {
       return this.usersService.findByEmail(email);
@@ -37,8 +34,6 @@ export class UsersController {
   @ApiResponse({ status: 403, description: "권한 없음" })
   @ApiResponse({ status: 404, description: "사용자를 찾을 수 없음" })
   @Get(":id")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("admin")
   findOne(@Param("id") id: string) {
     return this.usersService.findOne(id);
   }
@@ -49,8 +44,6 @@ export class UsersController {
   @ApiResponse({ status: 403, description: "권한 없음" })
   @ApiResponse({ status: 404, description: "사용자를 찾을 수 없음" })
   @Put(":id")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("admin")
   update(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
@@ -61,8 +54,6 @@ export class UsersController {
   @ApiResponse({ status: 403, description: "권한 없음" })
   @ApiResponse({ status: 404, description: "사용자를 찾을 수 없음" })
   @Delete(":id")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("admin")
   remove(@Param("id") id: string) {
     return this.usersService.remove(id);
   }
@@ -73,8 +64,6 @@ export class UsersController {
   @ApiResponse({ status: 403, description: "권한 없음" })
   @ApiResponse({ status: 404, description: "사용자를 찾을 수 없음" })
   @Post(":id/roles")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("admin")
   setRole(@Param("id") id: string, @Body() roleData: { role: string }) {
     return this.usersService.setRole(id, roleData.role);
   }

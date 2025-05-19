@@ -9,7 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "PORT=$EVENT_PORT NODE_ENV=development JWT_SECRET=$JWT_SECRET MONGODB_URI=$EVENT_MONGODB_URI AUTH_SERVICE_URL=$AUTH_SERVICE_URL nest start --watch",
+    "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",

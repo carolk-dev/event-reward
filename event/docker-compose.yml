@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  event:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: event-reward-event
+    restart: always
+    ports:
+      - "${EVENT_PORT:-3002}:${EVENT_PORT:-3002}"
+    environment:
+      - NODE_ENV=production
+      - PORT=${EVENT_PORT:-3002}
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - private-network
+
+networks:
+  private-network:

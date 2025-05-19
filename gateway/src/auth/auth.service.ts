@@ -1,5 +1,6 @@
 import { Injectable, HttpException, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
 import axios, { AxiosError } from "axios";
 
 @Injectable()
@@ -7,7 +8,10 @@ export class AuthService {
   private authServiceUrl: string;
   private readonly logger = new Logger(AuthService.name);
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private jwtService: JwtService
+  ) {
     this.authServiceUrl = this.configService.get<string>("AUTH_SERVICE_URL");
     this.logger.log(`Auth service URL: ${this.authServiceUrl}`);
   }
@@ -39,11 +43,15 @@ export class AuthService {
         return token;
       }
 
-      // token이 문자열인 경우(원시 JWT 토큰)
-      const response = await axios.post(`${this.authServiceUrl}/auth/validate`, { payload: token });
-      return response.data;
+      // JWT 토큰 내부적으로 검증
+      const payload = this.jwtService.verify(token, {
+        secret: this.configService.get<string>("JWT_SECRET"),
+      });
+
+      this.logger.log(`토큰 내부 검증 완료: ${JSON.stringify(payload)}`);
+      return payload;
     } catch (error) {
-      this.logger.error(`Token validation error: ${error.message || error}`);
+      this.logger.error(`토큰 검증 오류: ${error.message || error}`);
       // 토큰 검증 오류는 null을 반환하도록 유지 (가드에서 처리)
       return null;
     }

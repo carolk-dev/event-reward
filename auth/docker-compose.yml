@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  auth:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: event-reward-auth
+    restart: always
+    ports:
+      - "${AUTH_PORT:-3001}:${AUTH_PORT:-3001}"
+    environment:
+      - NODE_ENV=production
+      - PORT=${AUTH_PORT:-3001}
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - private-network
+
+networks:
+  private-network:
+

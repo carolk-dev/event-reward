@@ -1,7 +1,7 @@
 import { MongoClient, ObjectId } from "mongodb";
 
 // MongoDB 연결 정보
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://root:password@localhost:27017/event?authSource=admin";
+const MONGODB_URI = process.env.MONGO_URI;
 
 // 샘플 이벤트 데이터
 const eventsSampleData = [
