@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Query } from "@nestjs/common";
 import { EventService } from "./event.service";
 import { RolesGuard } from "../common/guards/roles.guard";
+import { UserMatchGuard } from "../common/guards/user-match.guard";
 import { Roles } from "../common/decorators/roles.decorator";
 import { UserRole } from "../common/constants/roles";
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from "@nestjs/swagger";
@@ -180,11 +181,11 @@ export class RewardRequestController {
   @ApiOperation({ summary: "보상 요청" })
   @ApiResponse({ status: 201, description: "보상 요청 성공" })
   @ApiResponse({ status: 401, description: "인증되지 않은 사용자" })
-  @ApiResponse({ status: 403, description: "권한 없음" })
+  @ApiResponse({ status: 403, description: "권한 없음 또는 요청 ID와 토큰 ID 불일치" })
   @ApiResponse({ status: 400, description: "잘못된 요청 또는 중복 요청" })
   @ApiBearerAuth()
   @Post()
-  @UseGuards(AuthGuard, RolesGuard)
+  @UseGuards(AuthGuard, RolesGuard, UserMatchGuard)
   @Roles(UserRole.USER, UserRole.ADMIN)
   async requestReward(@Body() requestData: RewardRequestDto) {
     return this.eventService.requestReward(requestData.userId, requestData.rewardId);

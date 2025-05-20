@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { RewardsService } from './rewards.service';
-import { RewardsController } from './rewards.controller';
-import { Reward, RewardSchema } from './schemas/reward.schema';
-import { RewardRequest, RewardRequestSchema } from './schemas/reward-request.schema';
-import { EventsModule } from '../events/events.module';
+import { Module } from "@nestjs/common";
+import { MongooseModule } from "@nestjs/mongoose";
+import { RewardsService } from "./rewards.service";
+import { RewardsController, RewardRequestsController } from "./rewards.controller";
+import { Reward, RewardSchema } from "./schemas/reward.schema";
+import { RewardRequest, RewardRequestSchema } from "./schemas/reward-request.schema";
+import { EventsModule } from "../events/events.module";
 
 @Module({
   imports: [
@@ -14,8 +14,8 @@ import { EventsModule } from '../events/events.module';
     ]),
     EventsModule,
   ],
-  controllers: [RewardsController],
+  controllers: [RewardsController, RewardRequestsController],
   providers: [RewardsService],
   exports: [RewardsService],
 })
-export class RewardsModule {} 
+export class RewardsModule {}
