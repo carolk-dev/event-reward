@@ -5,6 +5,9 @@
 ## 로컬 실행
 
 ```bash
+
+npm install
+
 # 개발 모드로 실행
 npm run start:dev
 

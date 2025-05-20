@@ -1,6 +1,8 @@
 import { MongoClient, ObjectId } from "mongodb";
 import * as bcrypt from "bcrypt";
+import * as dotenv from "dotenv";
 
+dotenv.config();
 // MongoDB 연결 정보
 const MONGODB_URI = process.env.MONGO_URI;
 
@@ -91,11 +93,11 @@ async function seedDatabase() {
     console.log("MongoDB에 연결되었습니다.");
 
     const db = client.db();
-
+    /*
     // 기존 데이터 삭제
     await db.collection("users").deleteMany({});
     console.log("기존 사용자 데이터가 삭제되었습니다.");
-
+*/
     // 새 데이터 삽입
     const usersSampleData = await createUsersSampleData();
     await db.collection("users").insertMany(usersSampleData);
