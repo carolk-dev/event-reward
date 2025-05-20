@@ -11,9 +11,3 @@ npm run start:dev
 # Docker로 실행
 docker-compose up -d
 ```
-
-## API 문서
-
-Swagger UI를 통해 API 문서를 확인할 수 있습니다:
-
-- http://localhost:3001/api-docs
