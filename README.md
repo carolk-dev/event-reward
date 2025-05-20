@@ -2,10 +2,6 @@
 
 NestJS, MongoDB 기반의 마이크로서비스 아키텍처로 구현된 이벤트 보상 시스템입니다.
 
-## 시스템 시퀀스 다이어그램 (user)
-
-![이벤트 보상 시스템 시퀀스 다이어그램](./seq_diagram.png)
-
 ## 시스템 구성
 
 1. **Gateway Server**
@@ -26,6 +22,15 @@ NestJS, MongoDB 기반의 마이크로서비스 아키텍처로 구현된 이벤
    - 보상 관리 (등록/조회)
    - 유저 보상 요청 처리
    - 보상 지급 이력 관리
+
+## 사용자 역할
+
+시스템은 다음과 같은 역할을 지원합니다:
+
+- **USER**: 일반 사용자, 보상 요청 가능
+- **OPERATOR**: 운영자, 이벤트 및 보상 관리 가능
+- **AUDITOR**: 감사자, 보상 요청 이력 조회만 가능
+- **ADMIN**: 관리자, 모든 기능 접근 가능
 
 ## 마이크로서비스 구조도
 
@@ -107,7 +112,7 @@ npm run seed
 
 샘플 데이터는 각 서비스의 `src/seed-data.ts` 파일에 정의되어 있습니다.
 
-## API 목록
+## 상세 API 목록
 
 ### 인증 API (Auth)
 
@@ -119,6 +124,9 @@ npm run seed
 | GET    | /users               | 모든 사용자 조회       | ADMIN, OPERATOR |
 | GET    | /users?email={email} | 이메일로 사용자 조회 | ADMIN, OPERATOR |
 | GET    | /users/{id}          | ID로 사용자 조회     | ADMIN, OPERATOR |
+| PUT    | /users/{id}          | 사용자 정보 업데이트 | ADMIN, OPERATOR |
+| DELETE | /users/{id}          | 사용자 삭제          | ADMIN           |
+| POST   | /users/{id}/roles    | 사용자 역할 설정     | ADMIN           |
 
 ### 이벤트 API (Event)
 
@@ -153,3 +161,7 @@ npm run seed
 | GET    | /reward-requests?eventId={eventId}                                 | 이벤트별 보상 요청 조회               | AUDITOR, OPERATOR, ADMIN |
 | GET    | /reward-requests?userId={userId}                                   | 사용자별 보상 요청 조회               | AUDITOR, OPERATOR, ADMIN |
 | GET    | /reward-requests?status={status}&eventId={eventId}&userId={userId} | 여러 조건으로 필터링된 보상 요청 조회 | AUDITOR, OPERATOR, ADMIN |
+
+## 시스템 시퀀스 다이어그램 (user)
+
+![이벤트 보상 시스템 시퀀스 다이어그램](./seq_diagram.png)
